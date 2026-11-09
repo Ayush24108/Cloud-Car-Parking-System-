@@ -50,7 +50,14 @@ public class BookingService {
             throw new IllegalArgumentException("Parking space " + space.getSpaceNumber() + " is already booked during the requested time slot. Please select a different slot.");
         }
 
-        // Allow users to reserve multiple spots or consecutive spots freely for demo and flexible parking
+        // Enforce 1 slot per person policy: same user cannot book more than one slot during the same time window
+        boolean userOverlaps = bookingRepository.existsOverlappingBookingForUser(
+                request.getUserEmail(), request.getStartTime(), request.getEndTime());
+        if (userOverlaps) {
+            throw new IllegalArgumentException("Reservation limit reached: User " + request.getUserEmail() + 
+                    " already has an active reservation during this time window. Campus policy permits only one parking slot per person at a time.");
+        }
+
         // Fee Calculation: (Duration in minutes / 60.0) * hourlyRate
         long minutes = Duration.between(request.getStartTime(), request.getEndTime()).toMinutes();
         double hours = Math.max(1.0, minutes / 60.0);

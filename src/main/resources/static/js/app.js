@@ -217,6 +217,14 @@ class CloudParkApp {
             quickStudentBtn.addEventListener('click', () => autoLogin('alex@thapar.edu', 'user123'));
         }
 
+        const viewExistingBookingBtn = document.getElementById('drawer-view-existing-booking-btn');
+        if (viewExistingBookingBtn) {
+            viewExistingBookingBtn.addEventListener('click', () => {
+                this.closeDrawer();
+                this.openMyBookings();
+            });
+        }
+
         const findAvailBtn = document.getElementById('find-available-slot-btn');
         if (findAvailBtn) {
             findAvailBtn.addEventListener('click', () => {
@@ -389,8 +397,23 @@ class CloudParkApp {
             occupiedSection.classList.add('hidden');
             if (!api.user) {
                 loginPrompt?.classList.remove('hidden');
+                document.getElementById('drawer-active-booking-banner')?.classList.add('hidden');
             } else {
                 loginPrompt?.classList.add('hidden');
+                // Check if user already holds an active booking (1 slot per person policy)
+                api.getUserBookings(api.user.email).then(bookings => {
+                    const activeBooking = bookings && bookings.find(b => b.status === 'CONFIRMED' || b.status === 'ACTIVE');
+                    const banner = document.getElementById('drawer-active-booking-banner');
+                    if (activeBooking && banner) {
+                        banner.classList.remove('hidden');
+                        const msg = document.getElementById('drawer-active-booking-msg');
+                        if (msg) {
+                            msg.textContent = `You already hold active Space ${activeBooking.parkingSpace ? activeBooking.parkingSpace.spaceNumber : ''} (Ref: ${activeBooking.bookingReference}). Campus policy permits only 1 slot per person.`;
+                        }
+                    } else if (banner) {
+                        banner.classList.add('hidden');
+                    }
+                }).catch(() => {});
             }
             this.updateBookingCalculation(2); // default 2 hours
         } else {
@@ -517,7 +540,12 @@ class CloudParkApp {
             this.engine.selectSlot(bookedSpaceId);
         } catch (err) {
             console.error('Booking submission error:', err);
-            this.showToast('Booking failed: ' + err.message, 'error');
+            const isLimitError = err.message && (err.message.includes('already has an active reservation') || err.message.includes('Reservation limit'));
+            if (isLimitError) {
+                this.showToast('⚠️ Reservation blocked: You already hold an active booking! Campus policy permits only 1 slot per person. Check "My Reservations" to view or cancel.', 'warning');
+            } else {
+                this.showToast('Booking failed: ' + err.message, 'error');
+            }
         } finally {
             if (confirmBtn) {
                 confirmBtn.disabled = false;

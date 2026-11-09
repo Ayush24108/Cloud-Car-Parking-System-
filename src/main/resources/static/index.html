@@ -187,6 +187,19 @@
                 </button>
             </div>
 
+            <!-- Active Booking Notice (Shown if user already has an active reservation) -->
+            <div id="drawer-active-booking-banner" class="hidden" style="background: rgba(245, 158, 11, 0.12); border: 1px solid var(--warning); padding: 12px; border-radius: var(--radius-sm); margin-bottom: 14px;">
+                <span style="font-size: 12px; color: var(--warning); display: flex; align-items: center; gap: 6px; font-weight: 600; margin-bottom: 4px;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> 1 Slot Per Person Policy
+                </span>
+                <span style="font-size: 11px; color: var(--text-secondary); display: block; line-height: 1.4; margin-bottom: 8px;" id="drawer-active-booking-msg">
+                    You already have an active reservation. Campus policy permits only 1 parking slot per person.
+                </span>
+                <button type="button" class="hud-btn" id="drawer-view-existing-booking-btn" style="width: 100%; font-size: 11px; justify-content: center; padding: 6px;">
+                    <i class="fa-solid fa-ticket"></i> View / Cancel Existing Reservation
+                </button>
+            </div>
+
             <!-- Reservation Timing Mode: Now vs Advance -->
             <div style="margin-bottom: 14px;">
                 <span class="filter-section-title">Reservation Type</span>

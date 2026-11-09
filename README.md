@@ -1,229 +1,151 @@
-#  Cloud Parking Management System
+# CloudPark 3D - Campus Smart Parking System 🚗⚡
 
-A cloud-based parking management application designed to simplify parking operations by allowing users to check parking availability, reserve parking spaces, and manage parking activities through a web interface.
+An intelligent, cloud-connected Car Parking Management System featuring a **real-time 3D interactive user interface** built with **Three.js** and backed by a **Spring Boot REST API** with MySQL and JWT security.
 
-The system aims to reduce manual parking management, improve space utilization, and provide a centralized platform for managing multiple parking locations.
+Developed specifically for campus environments (with built-in `@thapar.edu` domain verification and pre-seeded campus parking zones).
 
-##  Project Overview
+---
 
-The **Cloud Parking Management System** integrates web technologies, database management, and cloud computing to provide an efficient and scalable solution for parking facilities.
+## 🌟 Key Highlights
 
-Users can view available parking spaces and make reservations, while administrators can manage parking lots, monitor vehicle entries and exits, and handle billing and payment operations.
+### 🏎️ Interactive 3D Digital Twin (Three.js)
+- **Procedural 3D Parking Lot**: Realistic asphalt tarmac, curbs, road markings, entry boom-barriers, trees, and campus street lamps with localized night illumination.
+- **Dynamic 3D Cars**: Procedurally rendered modern 3D vehicle models (with colored body chassis, tinted glass cabin, headlights, taillights, and metallic rims) parked inside reserved and occupied spaces.
+- **Color-Coded Status Slots**:
+  - 🟢 **Emerald Green**: `AVAILABLE` (with subtle animated breathing glow)
+  - 🟡 **Amber Gold**: `RESERVED`
+  - 🔴 **Ruby Red**: `OCCUPIED` (with parked 3D car)
+  - ⚪ **Steel Hazard**: `MAINTENANCE`
+- **Slot Type Markers**: Standard, ⚡ EV Charging, 🚙 Compact, ♿ Handicap / VIP.
+- **Raycasting Interactivity**:
+  - Hovering reveals a dynamic floating tooltip showing space number, type, and hourly rate.
+  - Clicking a slot smoothly flies the 3D camera to frame the space and opens the **Booking & Inspection Drawer**.
+- **Cinematic Camera Controls**:
+  - 🎥 **Isometric View** (45° angle)
+  - 📐 **Top-Down 2D Architectural View**
+  - 🏎️ **Driveway / Driver View**
+  - 🔄 **OrbitControls** (drag to rotate, scroll to zoom, right-click to pan)
+- **Atmospheric Controls**:
+  - ☀️ / 🌙 **Day & Night Mode Toggle**: Switches between sunny daylight and a cyberpunk night mode with glowing street lamps and slot lines.
+  - 🤖 **Live Traffic Simulation Mode**: Simulates real-time campus cars arriving and departing every few seconds.
 
-##  Features
+---
 
-- **Parking Availability:** View available and occupied parking spaces.
-- **Online Booking:** Reserve parking spaces through a web interface.
-- **Admin Dashboard:** Manage parking lots, spaces, and bookings.
-- **Entry and Exit Tracking:** Record vehicle entry and exit details.
-- **Automated Billing:** Calculate parking charges based on parking duration.
-- **Multiple Parking Lots:** Support for managing multiple parking locations.
-- **Payment Management:** Integrate payment processing for parking reservations.
-- **Cloud Deployment:** Use AWS infrastructure to host and operate the application.
+### 🛡️ Robust Spring Boot REST API
+- **Spring Security & Stateless JWT Authentication**: Generates 24-hour signed HMAC-SHA256 tokens. Enforces `@thapar.edu` domain restriction.
+- **Conflict & Overlap Prevention**: Robust JPQL queries detect and prevent double-booking collisions for the same parking slot or overlapping bookings by the same user.
+- **Dynamic Fee Calculator**: Computes parking fees based on duration and hourly rate ($$\text{Fee} = \max(1, \text{Hours}) \times \text{Rate}$$).
+- **Admin Analytics**: Real-time lot occupancy rate (%) calculation and accumulated revenue metrics.
+- **Pre-Configured Data Seeder**: Automatically seeds default accounts and 100 campus parking slots across 2 parking zones upon first launch.
 
-##  Tech Stack
+---
 
-| Technology | Purpose |
-|---|---|
-| Java | Backend application logic |
-| HTML, CSS, JavaScript | Web interface |
-| AWS | Cloud infrastructure and deployment |
-| Database | Store users, parking spaces, bookings, and transactions |
-| Git and GitHub | Version control and project collaboration |
+## 🏗️ Project Architecture
 
-*Update the stack to match your actual implementation. The database engine, AWS services, and frontend framework should be listed only once you have selected or implemented them.*
-
-##  System Architecture
-
-```text
-             User / Administrator
-                      |
-                      v
-                Web Interface
-                      |
-                      v
-              Java Backend
-                      |
-          +-----------+-----------+
-          |           |           |
-          v           v           v
-      Booking     Availability   Billing
-      Management   Management    & Payments
-          |           |           |
-          +-----------+-----------+
-                      |
-                      v
-                   Database
-                      |
-                      v
-                AWS Cloud
 ```
-
-The application separates the user interface, business logic, and data storage to make the system easier to maintain and extend.
-
-##  Core Modules
-
-### 1. User Management
-- Register and authenticate users.
-- Access parking information.
-- View and manage reservations.
-
-### 2. Parking Management
-- Create and manage parking lots.
-- Track available and occupied spaces.
-- Allocate spaces to valid bookings.
-
-### 3. Booking Management
-- Reserve a parking space.
-- Track booking status.
-- Prevent conflicting reservations.
-
-### 4. Entry and Exit Management
-- Record vehicle entry and exit times.
-- Update parking space availability.
-- Calculate the duration of each parking session.
-
-### 5. Billing and Payments
-- Calculate charges based on parking duration and pricing rules.
-- Maintain transaction records.
-- Track payment status.
-
-### 6. Cloud Infrastructure
-- Deploy the application on AWS.
-- Configure access permissions and network security.
-- Support centralized access and future scalability.
-
-##  AWS Integration
-
-AWS will provide the cloud infrastructure required to deploy and operate the application.
-
-Potential AWS services include:
-
-- **Amazon EC2:** Host the backend application.
-- **Amazon RDS:** Store structured application data.
-- **Amazon S3:** Store static assets or application files where appropriate.
-- **Amazon CloudWatch:** Monitor application performance and logs.
-- **AWS IAM:** Manage access permissions securely.
-
-These services are potential integration options; the final list should reflect the services actually configured in the project.
-
-##  Getting Started
-
-### Prerequisites
-
-Before running the application, ensure you have:
-
-- Java Development Kit (JDK)
-- A Java IDE such as IntelliJ IDEA or Eclipse
-- Git
-- A configured database
-- AWS account and credentials, if running cloud-dependent features
-
-### Installation
-
-**1. Clone the repository**
-
-```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
-```
-
-**2. Navigate to the project directory**
-
-```bash
-cd cloud-parking-system
-```
-
-**3. Configure the database**
-
-Create the required database and update the application's database configuration with your connection details.
-
-**4. Configure environment variables**
-
-Set the necessary database credentials and AWS configuration through environment variables or an appropriate local configuration file.
-
-Do not commit passwords, access keys, or other secrets to GitHub.
-
-**5. Build and run the application**
-
-Use the build instructions appropriate to your project. For a Maven-based Java project, for example:
-
-```bash
-mvn clean package
-```
-
-Run the application using the configured entry point and deployment setup.
-
-*The commands above are illustrative; adjust them to your actual project structure and build tool.*
-
-## Project Structure
-
-A possible structure for the project is:
-
-```text
-cloud-parking-system/
+Cloud-Car-Parking-System--Java/
 ├── src/
 │   ├── main/
-│   │   ├── java/
-│   │   │   ├── controller/
-│   │   │   ├── service/
-│   │   │   ├── model/
-│   │   │   └── repository/
+│   │   ├── java/com/cloudparking/parking/backend/
+│   │   │   ├── config/            # DataInitializer (auto-seeds accounts & slots)
+│   │   │   ├── controller/        # REST APIs (Auth, Booking, Spaces, Lots, Analytics)
+│   │   │   ├── dto/               # Request/Response Data Transfer Objects
+│   │   │   ├── entity/            # JPA Entities (User, ParkingLot, ParkingSpace, Booking)
+│   │   │   ├── enums/             # Role, SpaceStatus, SpaceType, BookingStatus
+│   │   │   ├── exception/         # Global Exception Handlers
+│   │   │   ├── repository/        # Spring Data JPA Repositories
+│   │   │   ├── security/          # Spring Security, JWT Filter, CORS Config
+│   │   │   └── service/           # Business Logic (Auth, Booking, Analytics)
 │   │   └── resources/
+│   │       ├── application.yml    # Database & server configuration
+│   │       └── static/            # Top-Notch 3D Web Frontend
+│   │           ├── index.html     # Main HUD & 3D WebGL viewport
+│   │           ├── css/style.css  # Modern glassmorphism dark theme
+│   │           └── js/
+│   │               ├── api.js         # REST API client & auth token storage
+│   │               ├── parking3d.js   # Three.js 3D rendering engine & procedural cars
+│   │               ├── app.js         # Application state, filters, booking modals
+│   │               └── vendor/        # Local Three.js, OrbitControls, GSAP (offline-ready)
 │   └── test/
-├── frontend/
-├── database/
-├── docs/
-├── .gitignore
-└── README.md
+└── pom.xml                        # Maven dependencies & build configuration
 ```
 
-Adapt this structure to your actual files and frameworks.
+---
 
-##  Security Considerations
+## 🚀 Quick Start Guide
 
-- Authenticate users before allowing access to protected features.
-- Apply role-based access control for administrators and regular users.
-- Validate booking requests and prevent double allocation.
-- Store credentials securely using environment variables or AWS Secrets Manager.
-- Restrict AWS permissions according to the principle of least privilege.
-- Use HTTPS for production deployments.
+### 1. Prerequisites
+- **Java 21+** (Java 25 target configured)
+- **MySQL Server** (running locally on port 3306)
 
-##  Future Enhancements
+### 2. Configure MySQL Database
+Open your MySQL terminal or Workbench and create the database:
+```sql
+CREATE DATABASE cloud_parking_db;
+```
 
-- Real-time parking availability updates.
-- QR-code-based vehicle entry and exit.
-- Dynamic pricing based on parking duration and demand.
-- Email or SMS booking notifications.
-- Analytics dashboard for parking utilization.
-- Integration with IoT sensors for automated occupancy detection.
+Update your MySQL root password in [`src/main/resources/application.yml`](src/main/resources/application.yml):
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/cloud_parking_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: YOUR_MYSQL_PASSWORD
+```
 
-##  Project Objectives
+### 3. Run the Application
+Open PowerShell or your terminal in this directory and run:
+```bash
+./mvnw spring-boot:run
+```
+*(Or use standard `mvn spring-boot:run`)*
 
-- Reduce manual effort in parking management.
-- Improve visibility into parking availability.
-- Simplify booking and billing operations.
-- Demonstrate the application of cloud computing in a real-world system.
-- Build a maintainable foundation that can scale to multiple parking facilities.
+### 4. Open the 3D Web Application
+Once Spring Boot boots up, open your web browser:
+👉 **`http://localhost:8080/`**
 
-##  Contributors
+---
 
-**Ayush Jindal**
+## 🔑 Default Test Accounts
 
-Computer Engineering Student  
-Thapar Institute of Engineering and Technology, Patiala
+| Role | Email | Password | Permissions |
+| :--- | :--- | :--- | :--- |
+| **Student** | `alex@thapar.edu` | `user123` | View 3D lots, reserve slots, view & cancel bookings |
+| **Campus Admin** | `admin@thapar.edu` | `admin123` | All student features + Live Analytics & Add Space tools |
 
-**Tanish Bansal**
+*(Note: The login popup includes **1-Click Demo Fill** buttons for immediate sign-in!)*
 
-Computer Engineering Student  
-Thapar Institute of Engineering and Technology, Patiala
+---
 
+## 📡 API Endpoints Reference
 
-**Mehak Garg**
+| Method | Route | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/health` | Public | System status check |
+| `POST` | `/api/auth/register` | Public | Register new `@thapar.edu` user |
+| `POST` | `/api/auth/login` | Public | Login and receive JWT token |
+| `GET` | `/api/lots` | Public | List all parking lots |
+| `POST` | `/api/lots` | Admin | Create a new parking lot |
+| `GET` | `/api/spaces/lot/{lotId}/all` | Public | Fetch all slots for 3D digital twin |
+| `GET` | `/api/spaces/lot/{lotId}` | Public | Fetch only available slots |
+| `POST` | `/api/spaces` | Admin | Add new parking slot |
+| `PATCH`| `/api/spaces/{id}/status` | Admin | Override slot status |
+| `POST` | `/api/bookings` | User/Admin | Reserve a parking space |
+| `PUT` | `/api/bookings/{id}/cancel` | User/Admin | Cancel a reservation |
+| `GET` | `/api/bookings?email={email}` | User/Admin | View user booking history |
+| `GET` | `/api/analytics/lots/{id}/occupancy` | Admin | View live occupancy % and breakdown |
+| `GET` | `/api/analytics/lots/{id}/revenue` | Admin | View total revenue earned |
 
-Computer Engineering Student  
-Thapar Institute of Engineering and Technology, Patiala
+---
 
+## 👥 Contributors
 
-## License
+- **Ayush Jindal** — Computer Engineering, Thapar Institute of Engineering and Technology, Patiala
+- **Tanish Bansal** — Computer Engineering, Thapar Institute of Engineering and Technology, Patiala
+- **Mehak Garg** — Computer Engineering, Thapar Institute of Engineering and Technology, Patiala
 
-This project is intended for educational and academic purposes. Add an appropriate open-source license if you intend to distribute the code under specific reuse terms.
+---
+
+## 📜 License
+
+This project is developed for educational and academic purposes at Thapar Institute of Engineering and Technology.

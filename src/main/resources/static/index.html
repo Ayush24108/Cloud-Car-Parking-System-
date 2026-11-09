@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudPark 3D - Campus Smart Parking System</title>
+    
+    <!-- Modern Typography & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- 3D WebGL Canvas Layer -->
+    <div id="canvas-container"></div>
+
+    <!-- UI Overlay Layer -->
+    <div class="ui-overlay">
+
+        <!-- Top Navigation Bar -->
+        <header class="top-nav glass interactive-panel">
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-car-side"></i>
+                </div>
+                <div>
+                    <span class="brand-title">Cloud<span>Park</span> 3D</span>
+                    <span class="brand-subtitle">Campus Smart Parking • Thapar University</span>
+                </div>
+            </div>
+
+            <!-- Lot Switcher -->
+            <div class="lot-selector" id="lot-selector-container">
+                <!-- Dynamically populated lots -->
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="stats-badge-bar">
+                <div class="stat-item" title="Total Slots">
+                    <span class="stat-dot total"></span>
+                    <span>Total: <strong id="stat-total-count">--</strong></span>
+                </div>
+                <div class="stat-item" title="Available Slots">
+                    <span class="stat-dot available"></span>
+                    <span>Available: <strong id="stat-avail-count">--</strong></span>
+                </div>
+                <div class="stat-item" title="Reserved Slots">
+                    <span class="stat-dot reserved"></span>
+                    <span>Reserved: <strong id="stat-res-count">--</strong></span>
+                </div>
+                <div class="stat-item" title="Occupied Slots">
+                    <span class="stat-dot occupied"></span>
+                    <span>Occupied: <strong id="stat-occ-count">--</strong></span>
+                </div>
+            </div>
+
+            <!-- Right Actions -->
+            <div class="nav-actions">
+                <button class="hud-btn" id="day-night-toggle" title="Toggle Day / Night Lighting">
+                    <i class="fa-solid fa-moon"></i> Night
+                </button>
+                <button class="hud-btn" id="simulation-toggle" title="Toggle Real-Time Traffic Simulation">
+                    <i class="fa-solid fa-robot"></i> Simulation: Off
+                </button>
+
+                <!-- Unauthenticated Menu -->
+                <div id="nav-unauth-group">
+                    <button class="hud-btn" id="nav-login-btn">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+                    </button>
+                </div>
+
+                <!-- Authenticated Menu -->
+                <div id="nav-auth-group" class="hidden" style="display: flex; gap: 8px; align-items: center;">
+                    <button class="hud-btn" id="nav-my-bookings-btn">
+                        <i class="fa-solid fa-ticket"></i> My Bookings
+                    </button>
+                    <button class="hud-btn hidden" id="nav-analytics-btn">
+                        <i class="fa-solid fa-chart-pie"></i> Analytics
+                    </button>
+                    <div class="user-badge-pill" id="nav-user-badge">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <button class="hud-btn" id="nav-logout-btn" title="Sign Out">
+                        <i class="fa-solid fa-power-off"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Left Filter & Search HUD Stack -->
+        <div class="left-hud-stack interactive-panel">
+            <div class="filter-panel glass">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-space-input" placeholder="Search slot (e.g. MG-05)...">
+                </div>
+
+                <div class="filter-section-title">Filter By Space Type</div>
+                <div class="pills-group">
+                    <button class="filter-pill active" data-type="ALL">All Types</button>
+                    <button class="filter-pill" data-type="STANDARD">Standard</button>
+                    <button class="filter-pill" data-type="EV_CHARGING">⚡ EV</button>
+                    <button class="filter-pill" data-type="COMPACT">🚙 Compact</button>
+                    <button class="filter-pill" data-type="HANDICAP">♿ VIP</button>
+                </div>
+
+                <div class="filter-section-title">Filter By Availability</div>
+                <div class="pills-group">
+                    <button class="filter-pill active" data-status="ALL">All Status</button>
+                    <button class="filter-pill" data-status="AVAILABLE">🟢 Available</button>
+                    <button class="filter-pill" data-status="RESERVED">🟡 Reserved</button>
+                    <button class="filter-pill" data-status="OCCUPIED">🔴 Occupied</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Controls Dock (Camera Presets) -->
+        <div class="bottom-dock interactive-panel">
+            <div class="camera-controls glass">
+                <button class="cam-btn active" data-view="isometric" title="45 Degree Isometric View">
+                    <i class="fa-solid fa-cube"></i> Isometric
+                </button>
+                <button class="cam-btn" data-view="top" title="Top-Down Bird's Eye View">
+                    <i class="fa-solid fa-map"></i> Top-Down
+                </button>
+                <button class="cam-btn" data-view="driver" title="Entrance Driveway View">
+                    <i class="fa-solid fa-road"></i> Driveway
+                </button>
+                <button class="cam-btn" data-view="reset" title="Reset View">
+                    <i class="fa-solid fa-arrows-rotate"></i> Reset
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right Slide-In Drawer: Slot Details & Booking Form -->
+    <aside class="slot-drawer glass interactive-panel" id="slot-detail-drawer">
+        <div class="drawer-header">
+            <div class="drawer-title-group">
+                <div class="slot-circle" id="drawer-slot-number">MG-01</div>
+                <div>
+                    <h3 id="drawer-slot-title">Parking Space</h3>
+                    <span class="drawer-lot-name" id="drawer-lot-name">Main Gate Parking</span>
+                </div>
+            </div>
+            <button class="close-btn" id="drawer-close-btn">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Detail Grid -->
+        <div class="detail-grid">
+            <div class="detail-cell">
+                <span class="detail-label">Status</span>
+                <span class="status-badge available" id="drawer-space-status">AVAILABLE</span>
+            </div>
+            <div class="detail-cell">
+                <span class="detail-label">Type</span>
+                <span class="detail-value" id="drawer-space-type">Standard</span>
+            </div>
+            <div class="detail-cell">
+                <span class="detail-label">Rate</span>
+                <span class="detail-value" id="drawer-hourly-rate">₹50 / hr</span>
+            </div>
+            <div class="detail-cell">
+                <span class="detail-label">Floor</span>
+                <span class="detail-value">Ground Level</span>
+            </div>
+        </div>
+
+        <!-- Active Booking Form (Shown if AVAILABLE) -->
+        <div id="drawer-booking-section">
+            <!-- Quick Login Callout (Shown when not authenticated) -->
+            <div id="drawer-login-prompt" class="hidden" style="background: rgba(56, 189, 248, 0.12); border: 1px solid var(--primary); padding: 12px; border-radius: var(--radius-sm); margin-bottom: 14px; text-align: center;">
+                <span style="font-size: 12px; color: var(--text-primary); display: block; margin-bottom: 8px;">
+                    <i class="fa-solid fa-circle-info" style="color: var(--primary);"></i> You need to sign in to confirm this spot
+                </span>
+                <button type="button" class="demo-btn" id="drawer-quick-student-login" style="width: 100%; padding: 8px;">
+                    <i class="fa-solid fa-graduation-cap"></i> 1-Click Sign In as Student (Alex)
+                </button>
+            </div>
+
+            <!-- Reservation Timing Mode: Now vs Advance -->
+            <div style="margin-bottom: 14px;">
+                <span class="filter-section-title">Reservation Type</span>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px;">
+                    <button type="button" class="duration-chip active" id="timing-mode-now">
+                        <i class="fa-solid fa-bolt"></i> Start Now
+                    </button>
+                    <button type="button" class="duration-chip" id="timing-mode-advance">
+                        <i class="fa-solid fa-calendar-days"></i> Advance
+                    </button>
+                </div>
+            </div>
+
+            <!-- Future Date & Time Picker (Shown when Advance is selected) -->
+            <div class="form-group hidden" id="advance-time-group" style="margin-bottom: 12px;">
+                <label class="form-label">Scheduled Arrival Date & Time</label>
+                <input type="datetime-local" class="form-input" id="booking-start-time">
+                <span class="form-hint">Reserve slots up to days in advance</span>
+            </div>
+
+            <!-- Vehicle Number Plate -->
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label class="form-label">Vehicle Registration Number</label>
+                <input type="text" class="form-input" id="booking-plate-number" placeholder="e.g. PB 11 AB 1234" style="text-transform: uppercase;">
+            </div>
+
+            <div class="duration-selector">
+                <span class="filter-section-title">Select Parking Duration</span>
+                <div class="chips-row">
+                    <button class="duration-chip" data-hours="1">1 Hr</button>
+                    <button class="duration-chip active" data-hours="2">2 Hrs</button>
+                    <button class="duration-chip" data-hours="4">4 Hrs</button>
+                    <button class="duration-chip" data-hours="8">8 Hrs</button>
+                </div>
+            </div>
+
+            <div class="cost-summary-box" style="margin-top: 14px;">
+                <div>
+                    <span class="calc-title">Calculated Parking Fee</span>
+                    <div style="font-size: 11px; color: var(--text-muted);" id="calc-hours-label">2 hrs</div>
+                </div>
+                <div class="calc-price" id="calc-total-fee">₹100.00</div>
+            </div>
+
+            <div style="margin-top: 16px;">
+                <button class="btn-primary" id="confirm-booking-btn" style="width: 100%; padding: 14px; font-size: 15px; font-weight: 700; justify-content: center; box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4); cursor: pointer;">
+                    <i class="fa-solid fa-calendar-check"></i> <span id="confirm-booking-btn-text">Confirm & Reserve Spot</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Occupied Notice (Shown if OCCUPIED or RESERVED) -->
+        <div id="drawer-occupied-section" class="hidden">
+            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 18px; border-radius: var(--radius-md); text-align: center;">
+                <i class="fa-solid fa-ban" style="font-size: 28px; color: var(--danger); margin-bottom: 8px;"></i>
+                <p id="occupied-status-text" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">This space is currently reserved.</p>
+                <button type="button" class="btn-primary" id="find-available-slot-btn" style="font-size: 13px; width: 100%; justify-content: center;">
+                    <i class="fa-solid fa-crosshairs"></i> Select Next Available Green Spot
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Override Section -->
+        <div id="drawer-admin-status-section" class="hidden" style="margin-top: 10px; border-top: 1px solid var(--border-glass); padding-top: 14px;">
+            <span class="filter-section-title"><i class="fa-solid fa-shield-halved"></i> Admin Quick Status Override</span>
+            <div style="display: flex; gap: 6px; margin-top: 8px;">
+                <button class="hud-btn" id="admin-toggle-avail-btn" style="flex: 1; font-size: 11px;">Set Available</button>
+                <button class="hud-btn" id="admin-toggle-occupied-btn" style="flex: 1; font-size: 11px;">Set Occupied</button>
+                <button class="hud-btn" id="admin-toggle-maint-btn" style="flex: 1; font-size: 11px;">Maintenance</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Modal: Authentication (Sign In / Register) -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-box glass">
+            <div class="modal-header">
+                <h3>Campus Portal Access</h3>
+                <button class="close-btn modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Tab switcher -->
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" data-mode="login">Sign In</button>
+                <button class="auth-tab-btn" data-mode="register">Register</button>
+            </div>
+
+            <!-- Demo Fill Buttons -->
+            <div class="demo-accounts-box">
+                <span class="demo-title"><i class="fa-solid fa-wand-magic-sparkles"></i> 1-Click Demo Accounts</span>
+                <div class="demo-buttons-row">
+                    <button class="demo-btn" id="demo-student-btn" type="button">
+                        <i class="fa-solid fa-graduation-cap"></i> Student (Alex)
+                    </button>
+                    <button class="demo-btn" id="demo-admin-btn" type="button">
+                        <i class="fa-solid fa-user-shield"></i> Campus Admin
+                    </button>
+                </div>
+            </div>
+
+            <!-- Auth Form -->
+            <form id="auth-form">
+                <div class="form-group hidden" id="auth-name-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-input" id="auth-name" placeholder="Alex Student">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">University Email (@thapar.edu)</label>
+                    <input type="email" class="form-input" id="auth-email" required placeholder="name@thapar.edu">
+                    <span class="form-hint">Must end with @thapar.edu</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="auth-password" required placeholder="••••••••">
+                </div>
+
+                <div style="margin-top: 14px;">
+                    <button type="submit" class="btn-primary" id="auth-submit-btn">Sign In</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: My Bookings -->
+    <div class="modal-overlay" id="my-bookings-modal">
+        <div class="modal-box glass" style="width: 580px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-ticket" style="color: var(--primary);"></i> My Parking Reservations</h3>
+                <button class="close-btn modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="bookings-list" id="my-bookings-list">
+                <!-- Dynamically populated reservation cards -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Admin Analytics Dashboard -->
+    <div class="modal-overlay" id="analytics-modal">
+        <div class="modal-box glass" style="width: 620px;">
+            <div class="modal-header">
+                <div>
+                    <h3><i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> Campus Parking Analytics</h3>
+                    <span class="drawer-lot-name" id="analytics-lot-title">Main Gate Parking</span>
+                </div>
+                <button class="close-btn modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="analytics-grid">
+                <!-- Occupancy Card -->
+                <div class="analytics-card">
+                    <span class="card-title">Live Occupancy Rate</span>
+                    <span class="card-stat" id="analytics-occupancy-rate">0%</span>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="analytics-gauge-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="breakdown-row">
+                        <div class="breakdown-item"><span class="breakdown-val" style="color: var(--success);" id="analytics-occ-available">0</span>Avail</div>
+                        <div class="breakdown-item"><span class="breakdown-val" style="color: var(--warning);" id="analytics-occ-reserved">0</span>Res</div>
+                        <div class="breakdown-item"><span class="breakdown-val" style="color: var(--danger);" id="analytics-occ-occupied">0</span>Occ</div>
+                        <div class="breakdown-item"><span class="breakdown-val" style="color: #94a3b8;" id="analytics-occ-maint">0</span>Maint</div>
+                    </div>
+                </div>
+
+                <!-- Revenue Card -->
+                <div class="analytics-card">
+                    <span class="card-title">Accumulated Revenue</span>
+                    <span class="card-stat" style="color: var(--success);" id="analytics-revenue-amount">₹0.00</span>
+                    <div style="font-size: 13px; color: var(--text-muted); margin-top: 12px;">
+                        Total Reservations: <strong id="analytics-bookings-count" style="color: var(--text-primary);">0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Form: Add New Space -->
+            <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid var(--border-glass); padding: 16px; border-radius: var(--radius-md);">
+                <span class="filter-section-title"><i class="fa-solid fa-plus-circle"></i> Add New Parking Space to Current Lot</span>
+                <form id="admin-add-space-form" style="display: flex; gap: 8px; margin-top: 8px;">
+                    <input type="text" class="form-input" id="admin-new-space-num" placeholder="Slot Number (e.g. MG-71)" required style="flex: 2;">
+                    <select class="form-input" id="admin-new-space-type" style="flex: 2;">
+                        <option value="STANDARD">Standard</option>
+                        <option value="EV_CHARGING">EV Charging</option>
+                        <option value="COMPACT">Compact</option>
+                        <option value="HANDICAP">Handicap / VIP</option>
+                    </select>
+                    <button type="submit" class="btn-primary" style="flex: 1; padding: 0 14px;">Add Slot</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Booking Success Ticket Pass -->
+    <div class="modal-overlay" id="ticket-modal">
+        <div class="modal-box glass" style="max-width: 440px; text-align: center; border: 1px solid rgba(16, 185, 129, 0.4); box-shadow: 0 0 32px rgba(16, 185, 129, 0.2);">
+            <div style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.15); border: 2px solid var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 26px; color: var(--success); box-shadow: 0 0 20px var(--success-glow);">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 4px;">Slot Reserved Successfully!</h2>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Your digital campus parking pass is confirmed and active in the 3D lot.</p>
+
+            <!-- Pass Card -->
+            <div style="background: rgba(15, 23, 42, 0.85); border: 1px dashed var(--border-glass); border-radius: var(--radius-md); padding: 18px; text-align: left; margin-bottom: 20px; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-glass); padding-bottom: 12px; margin-bottom: 12px;">
+                    <div>
+                        <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block;">Assigned Slot</span>
+                        <span style="font-size: 24px; font-weight: 800; color: var(--primary);" id="ticket-slot-num">MG-01</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block;">Parking Lot</span>
+                        <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);" id="ticket-lot-name">Main Gate</span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px; margin-bottom: 12px;">
+                    <div>
+                        <span style="color: var(--text-muted); display: block; font-size: 11px;">Booking Reference</span>
+                        <strong style="color: var(--text-primary); font-family: monospace;" id="ticket-ref">BK-123456</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-muted); display: block; font-size: 11px;">Vehicle Plate</span>
+                        <strong style="color: var(--text-primary);" id="ticket-plate">PB 11 AB 1234</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-muted); display: block; font-size: 11px;">Time Window</span>
+                        <strong style="color: var(--text-primary);" id="ticket-time">Today, 2 hrs</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-muted); display: block; font-size: 11px;">Fee Charged</span>
+                        <strong style="color: var(--success); font-size: 14px;" id="ticket-fee">₹100.00</strong>
+                    </div>
+                </div>
+
+                <!-- Simulated Barcode -->
+                <div style="background: rgba(255, 255, 255, 0.08); padding: 8px; border-radius: 4px; text-align: center; margin-top: 10px;">
+                    <div style="font-family: monospace; letter-spacing: 4px; font-size: 16px; color: var(--text-secondary);">||| | |||| || ||| |||| |</div>
+                    <span style="font-size: 9px; color: var(--text-muted); text-transform: uppercase;">Scan at Campus Barrier Entry</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn-primary" id="ticket-view-bookings-btn" style="flex: 1; justify-content: center;">
+                    <i class="fa-solid fa-ticket"></i> View All Bookings
+                </button>
+                <button type="button" class="hud-btn modal-close-btn" style="flex: 1; justify-content: center;">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Cursor Hover Tooltip -->
+    <div class="slot-tooltip" id="slot-3d-tooltip"></div>
+
+    <!-- Toast Notifications Layer -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Core Scripts: Three.js, OrbitControls, GSAP (Local Vendor Libraries for Instant Offline Load) -->
+    <script src="js/vendor/three.min.js"></script>
+    <script src="js/vendor/OrbitControls.js"></script>
+    <script src="js/vendor/gsap.min.js"></script>
+    
+    <script src="js/api.js"></script>
+    <script src="js/parking3d.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+</html>
